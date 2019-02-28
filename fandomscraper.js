@@ -12,13 +12,16 @@ async function getAllCharacters() {
     })
 }
 
-async function getCharactersOnPage(url) {
+async function getCharactersOnPage(url = "https://simpsons.fandom.com/wiki/Category:Characters?from=b") {
     // no category pages, filter them out. return links
     let cPageBlob = await fetch(url).then(d => d.text().then(r => r))
     let cPageDom = new DOMParser().parseFromString(cPageBlob, "text/html")
     let charLinks = [...cPageDom.querySelectorAll("a.category-page__member-link")].filter(cat => cat["title"].indexOf("Category:") === -1).map(a => a["href"])
     asyncForEach(charLinks, async (charLink) => getCharacterInfo(charLink)
-        .then(characterInfo => characters.push(characterInfo)))
+        .then(characterInfo => {
+            if (characterInfo !== undefined) { 
+                characters.push(characterInfo) }
+            }))
 }
 
 async function getCharacterInfo(url) {
@@ -27,8 +30,20 @@ async function getCharacterInfo(url) {
     let cDom = new DOMParser().parseFromString(cBlob, "text/html")
     // Main photo
     char.Picture = await propFromSelector(cDom, ".pi-image-thumbnail", "src")
+    // Character name
     char.Name = await propFromSelector(cDom, "h1.page-header__title")
+    char.Bio = await getBio(cDom)
     characters.push(char)
+}
+
+async function getBio(dom) {
+    let bioHeader = dom.querySelectorAll("#Biography")[0]
+    if (bioHeader) {
+        let bioEl = bioHeader.parentElement.nextElementSibling.nextElementSibling;
+        if (bioEl) {
+            return bioEl["innerText"].trim();
+        } else return "";
+    } else return "";
 }
 
 // helper function
