@@ -7,8 +7,8 @@ var characters = [];
 async function getAllCharacters() {
     let AtoZ = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
     let startUrl = "https://simpsons.fandom.com/wiki/Category:Characters?from="
-    AtoZ.forEach(char => {
-        getCharactersOnPage(`${startUrl}${char}`)
+    AtoZ.forEach(page => {
+        getCharactersOnPage(`${startUrl}${page}`)
     })
 }
 
@@ -34,6 +34,7 @@ async function getCharacterInfo(url) {
     char.Name = await propFromSelector(cDom, "h1.page-header__title")
     char.Bio = await getBio(cDom)
     characters.push(char)
+    console.log(char.Name)
 }
 
 async function getBio(dom) {
