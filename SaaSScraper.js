@@ -29,6 +29,7 @@ async function getCharacterInfo(url) {
     // Character name
     char.Name = await propFromSelector(cDom, "h1.page-header__title")
     char.Bio = await getBio(cDom)
+    char.Quotes = await getQuotes(cDom)
     characters.push(char)
     console.log(char.Name)
 }
@@ -40,6 +41,15 @@ async function getBio(dom) {
         bio = `${bio}\n${t}`
     })
     return bio.trim();
+}
+
+async function getQuotes(dom) {
+    let quotes = [];
+    [...document.querySelectorAll("#mw-content-text > dl i")].forEach(quote => {
+        if (quote) {
+            quotes.push(quote)
+        }
+    })
 }
 
 // helper function
