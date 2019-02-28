@@ -17,11 +17,7 @@ async function getCharactersOnPage(url = "https://simpsons.fandom.com/wiki/Categ
     let cPageBlob = await fetch(url).then(d => d.text().then(r => r))
     let cPageDom = new DOMParser().parseFromString(cPageBlob, "text/html")
     let charLinks = [...cPageDom.querySelectorAll("a.category-page__member-link")].filter(cat => cat["title"].indexOf("Category:") === -1).map(a => a["href"])
-    asyncForEach(charLinks, async (charLink) => getCharacterInfo(charLink)
-        .then(characterInfo => {
-            if (characterInfo !== undefined) { 
-                characters.push(characterInfo) }
-            }))
+    asyncForEach(charLinks, async (charLink) => getCharacterInfo(charLink).then(characterInfo => { if (characterInfo !== undefined) { characters.push(characterInfo) } }))
 }
 
 async function getCharacterInfo(url) {
@@ -38,51 +34,32 @@ async function getCharacterInfo(url) {
 }
 
 async function getBio(dom) {
-    let bioHeader = dom.querySelectorAll("#Biography")[0]
-    if (bioHeader) {
-        let bioEl = bioHeader.parentElement.nextElementSibling.nextElementSibling;
-        if (bioEl) {
-            return bioEl["innerText"].trim();
-        } else return "";
-    } else return "";
+    let bio = "";
+    [...dom.querySelectorAll("#mw-content-text > p")].forEach(p => {
+        let t = p["innerText"].replace(/ *\[[^\]]*]/g, '');
+        bio = `${bio}\n${t}`
+    })
+    return bio.trim();
 }
 
 // helper function
 async function propFromSelector(dom, selector, prop) {
     let props = dom.querySelectorAll(selector);
     // console.log(props);
-    if (!props || props.length === 0) {
-        // console.log("no prop here")
-        return "";
-    }
-    //single prop
+    if (!props || props.length === 0) { return ""; }
     if (props.length === 1) {
-        // console.log("single prop here")
-        if (prop) {
-            // console.log(`getting prop ${props[0].prop}`)
-            return props[0][prop] ? props[0][prop] : ""
-        }
-        else {
-            // innerText is default
-            return props[0].innerText.trim()
-        }
+        if (prop) { return props[0][prop] ? props[0][prop] : "" }
+        else { return props[0].innerText.trim() }
     }
     // multiple, return an array
     else {
-        // console.log("multiple props!")
         let allProps = [];
         [...props].forEach(p => {
-            if (prop) {
-                if (p[prop]) { allProps.push(p[prop]) }
-            } else {
-                allProps.push(p.innerText.trim()) // innerText is default 
+            if (prop) { if (p[prop]) { allProps.push(p[prop]) } } else {
+                allProps.push(p.innerText.trim())
             }
         });
     }
 }
 // i like async foreach
-async function asyncForEach(array, callback) {
-    for (let index = 0; index < array.length; index++) {
-        await callback(array[index], index, array);
-    }
-}
+async function asyncForEach(array, callback) { for (let index = 0; index < array.length; index++) { await callback(array[index], index, array); } }
