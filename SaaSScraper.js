@@ -34,7 +34,7 @@ async function getCharacterInfo(url) {
     char.Bio = await getBio(cDom)
     let quotes = await getQuotes(cDom)
     if (quotes) { char.Quotes = quotes }
-    let photos = await getPhotos(url, char.Name)
+    let photos = await getPhotos(url)
     if (photos) { char.Photos = photos }
     characters.push(char)
     console.log(char.Name)
