@@ -34,6 +34,8 @@ async function getCharacterInfo(url) {
     char.Bio = await getBio(cDom)
     let quotes = await getQuotes(cDom)
     if (quotes) { char.Quotes = quotes }
+    let photos = await getPhotos(url, char.Name)
+    if (photos) { char.Photos = photos }
     characters.push(char)
     console.log(char.Name)
 }
@@ -45,6 +47,15 @@ async function getBio(dom) {
         bio = `${bio}\n${t}`
     })
     return bio.trim();
+}
+
+async function getPhotos(url) {
+    let galleryUrl = `${url}/Gallery`
+    let gBlob = await fetch(galleryUrl).then(d => d.text().then(r => r))
+    let gDom = new DOMParser().parseFromString(gBlob, "text/html")
+    let imgs = [...gDom.querySelectorAll(".wikia-gallery-item a img")].map(img => img.getAttribute("data-src"))
+    console.log(`got ${imgs.length} images`)
+    return imgs.length ? imgs : null;
 }
 
 async function getQuotes(dom) {
