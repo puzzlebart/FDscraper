@@ -32,6 +32,9 @@ async function getCharacterInfo(url) {
     // Character name
     char.Name = await propFromSelector(cDom, "h1.page-header__title")
     char.Bio = await getBio(cDom)
+    char.Gender = await getGender(cDom)
+    char.Dead = await isDead(cDom)
+    char.Occupation = await getJob(cDom)
     let quotes = await getQuotes(cDom)
     if (quotes) { char.Quotes = quotes }
     let photos = await getPhotos(url)
@@ -49,11 +52,30 @@ async function getBio(dom) {
     return bio.trim();
 }
 
+async function isDead(dom) { return dom.querySelectorAll("img[data-image-key='Deceased.png']").length > 0 }
+
+async function getJob(dom) {
+    let jobNode = dom.querySelector("div[data-source='job'] > div")
+    if (jobNode) {
+        return jobNode.innerText.trim()
+    }
+}
+
+async function getGender(dom) {
+    // returns F, M or N/A
+    isFemale = dom.querySelectorAll("img[data-image-key='Female.png']").length
+    isMale = dom.querySelectorAll("img[data-image-key='Male.png']").length
+    if (isFemale == isMale) { return "N/A" }
+    return isFemale > isMale ? "F" : "M" // Hahaha look at this shit
+}
+
 async function getPhotos(url) {
     let galleryUrl = `${url}/Gallery`
     let gBlob = await fetch(galleryUrl).then(d => d.text().then(r => r))
     let gDom = new DOMParser().parseFromString(gBlob, "text/html")
-    let imgs = [...gDom.querySelectorAll(".wikia-gallery-item a img")].map(img => img.getAttribute("data-src"))
+    let imgs = [...gDom.querySelectorAll(".wikia-gallery-item a img")]
+        .map(img => img.getAttribute("data-src"))
+        .filter(i => i)
     console.log(`got ${imgs.length} images`)
     return imgs.length ? imgs : null;
 }
@@ -61,11 +83,7 @@ async function getPhotos(url) {
 async function getQuotes(dom) {
     let quotes = [];
     [...dom.querySelectorAll("#mw-content-text > dl:first-of-type i")].forEach(quote => {
-        if (quote) {
-            if (quote.innerText.length) {
-                quotes.push(quote.innerText)
-            }
-        }
+        if (quote) { if (quote.innerText.length) { quotes.push(quote.innerText) } }
     })
     return quotes;
 }
@@ -73,7 +91,6 @@ async function getQuotes(dom) {
 // helper function
 async function propFromSelector(dom, selector, prop) {
     let props = dom.querySelectorAll(selector);
-    // console.log(props);
     if (!props || props.length === 0) { return ""; }
     if (props.length === 1) {
         if (prop) { return props[0][prop] ? props[0][prop] : "" }
