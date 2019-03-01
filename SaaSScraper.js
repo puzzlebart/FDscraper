@@ -3,6 +3,7 @@
 // let characters = [];
 
 var characters = [];
+charId = 1;
 
 async function getAllCharacters() {
     let AtoZ = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
@@ -21,9 +22,11 @@ async function getCharactersOnPage(url = "https://simpsons.fandom.com/wiki/Categ
 }
 
 async function getCharacterInfo(url) {
+    charId++;
     let char = {}
     let cBlob = await fetch(url).then(d => d.text().then(r => r))
     let cDom = new DOMParser().parseFromString(cBlob, "text/html")
+    char.Id = charId
     // Main photo
     char.Picture = await propFromSelector(cDom, ".pi-image-thumbnail", "src")
     // Character name
