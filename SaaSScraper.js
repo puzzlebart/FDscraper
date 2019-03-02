@@ -63,8 +63,8 @@ async function getJob(dom) {
 
 async function getGender(dom) {
     // returns F, M or N/A
-    isFemale = dom.querySelectorAll("img[data-image-key='Female.png']").length
-    isMale = dom.querySelectorAll("img[data-image-key='Male.png']").length
+    let isFemale = dom.querySelectorAll("img[data-image-key='Female.png']").length
+    let isMale = dom.querySelectorAll("img[data-image-key='Male.png']").length
     if (isFemale == isMale) { return "N/A" }
     return isFemale > isMale ? "F" : "M" // Hahaha look at this shit
 }
